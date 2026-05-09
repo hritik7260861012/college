@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useCompareStore } from "@/store/compareStore";
 import {
   GitCompare,
@@ -17,7 +16,7 @@ import {
   Plus,
 } from "lucide-react";
 import Image from "next/image";
-import { formatFees, formatPackage, cn } from "@/lib/utils";
+import { formatFees, formatPackage } from "@/lib/utils";
 
 export default function ComparePage() {
   const { compareList, removeFromCompare, clearCompare } = useCompareStore();
@@ -25,12 +24,12 @@ export default function ComparePage() {
   if (compareList.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto text-center">
-          <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <GitCompare className="h-10 w-10 text-slate-400" />
+        <div className="surface-card mx-auto max-w-md rounded-lg px-6 py-14 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-lg bg-teal-50">
+            <GitCompare className="h-10 w-10 text-teal-700" />
           </div>
-          <h1 className="text-2xl font-bold mb-4">No Colleges to Compare</h1>
-          <p className="text-slate-600 mb-8">
+          <h1 className="mb-4 text-2xl font-black text-slate-950">No Colleges to Compare</h1>
+          <p className="mb-8 text-slate-600">
             Add colleges to compare them side by side. You can compare up to 3
             colleges at a time.
           </p>
@@ -46,23 +45,26 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container mx-auto px-4 py-6 sm:py-10">
+      <div className="mb-7 flex flex-col justify-between gap-4 rounded-lg bg-teal-900 p-6 text-white shadow-xl shadow-teal-950/15 sm:flex-row sm:items-end sm:p-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Compare Colleges</h1>
-          <p className="text-slate-600">
+          <p className="mb-2 text-sm font-bold uppercase tracking-wide text-amber-200">
+            Decision table
+          </p>
+          <h1 className="text-3xl font-black tracking-normal sm:text-4xl">Compare Colleges</h1>
+          <p className="mt-3 text-teal-50">
             Comparing {compareList.length} of 3 colleges
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/colleges">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="w-full gap-2 bg-white/10 text-white hover:bg-white hover:text-teal-950 sm:w-auto">
               <Plus className="h-4 w-4" />
               Add College
             </Button>
           </Link>
           {compareList.length > 0 && (
-            <Button variant="outline" onClick={clearCompare} className="gap-2">
+            <Button variant="outline" onClick={clearCompare} className="w-full gap-2 bg-white/10 text-white hover:bg-white hover:text-teal-950 sm:w-auto">
               <Trash2 className="h-4 w-4" />
               Clear All
             </Button>
@@ -71,23 +73,67 @@ export default function ComparePage() {
       </div>
 
       {/* Compare Grid */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          <div className="grid" style={{ gridTemplateColumns: `200px repeat(${compareList.length}, 1fr)` }}>
+      <div className="grid gap-5 lg:hidden">
+        {compareList.map((college) => (
+          <div key={college.id} className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-white/10">
+            <div className="relative mb-4 h-44 overflow-hidden rounded-2xl">
+              <Image
+                src={college.image || "/placeholder.jpg"}
+                alt={college.name}
+                fill
+                className="object-cover"
+              />
+              <button
+                onClick={() => removeFromCompare(college.id)}
+                className="absolute right-3 top-3 rounded-2xl bg-white/90 p-2 shadow-sm"
+                aria-label="Remove college"
+              >
+                <Trash2 className="h-4 w-4 text-rose-500" />
+              </button>
+            </div>
+            <h2 className="safe-wrap text-2xl font-black text-slate-950 dark:text-white">
+              {college.name}
+            </h2>
+            <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-300">
+              <MapPin className="h-4 w-4 text-pink-500" />
+              {college.location}, {college.state}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <CompareMetric label="Rank" value={college.ranking ? `#${college.ranking}` : "N/A"} />
+              <CompareMetric label="Rating" value={`${college.rating}/5`} />
+              <CompareMetric label="Fees" value={formatFees(college.fees)} />
+              <CompareMetric label="Package" value={college.avgPackage ? formatPackage(college.avgPackage) : "N/A"} />
+              <CompareMetric label="Placed" value={college.placementPercentage ? `${college.placementPercentage}%` : "N/A"} />
+              <CompareMetric label="Established" value={college.establishedYear?.toString() || "N/A"} />
+            </div>
+            <Link href={`/colleges/${college.slug}`} className="mt-4 block">
+              <Button variant="outline" className="w-full gap-2">
+                View Details
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-white/10 lg:block">
+        <div>
+          <div className="grid" style={{ gridTemplateColumns: `220px repeat(${compareList.length}, minmax(0, 1fr))` }}>
             {/* Header Row - College Names */}
-            <div className="bg-slate-50 p-4 font-semibold border-r border-b flex items-center">
+            <div className="flex items-center border-b border-r border-slate-200 bg-slate-50 p-4 font-black text-slate-950">
               College
             </div>
             {compareList.map((college) => (
-              <div key={college.id} className="p-4 border-r border-b relative">
+              <div key={college.id} className="relative border-b border-r border-slate-200 p-4">
                 <button
                   onClick={() => removeFromCompare(college.id)}
-                  className="absolute top-2 right-2 p-1 hover:bg-slate-200 rounded"
+                  className="absolute right-2 top-2 rounded-md bg-white/90 p-2 shadow-sm hover:bg-rose-50"
+                  aria-label="Remove college"
                 >
                   <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
                 </button>
                 <Link href={`/colleges/${college.slug}`} className="block">
-                  <div className="relative h-32 rounded-lg overflow-hidden mb-3">
+                  <div className="relative mb-3 h-32 overflow-hidden rounded-lg">
                     <Image
                       src={college.image || "/placeholder.jpg"}
                       alt={college.name}
@@ -95,7 +141,7 @@ export default function ComparePage() {
                       className="object-cover"
                     />
                   </div>
-                  <h3 className="font-semibold text-lg line-clamp-2 hover:text-blue-600">
+                  <h3 className="line-clamp-2 text-lg font-black text-slate-950 hover:text-teal-800">
                     {college.name}
                   </h3>
                 </Link>
@@ -145,7 +191,7 @@ export default function ComparePage() {
             <CompareRow label="Annual Fees" icon={<IndianRupee className="h-4 w-4" />}>
               {compareList.map((college) => (
                 <div key={college.id} className="p-4 border-r border-b">
-                  <p className="font-semibold text-lg text-blue-600">
+                  <p className="text-lg font-black text-teal-800">
                     {formatFees(college.fees)}
                   </p>
                 </div>
@@ -160,7 +206,7 @@ export default function ComparePage() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-green-500 rounded-full"
+                          className="h-full rounded-full bg-emerald-500"
                           style={{ width: `${college.placementPercentage}%` }}
                         />
                       </div>
@@ -180,7 +226,7 @@ export default function ComparePage() {
               {compareList.map((college) => (
                 <div key={college.id} className="p-4 border-r border-b">
                   {college.avgPackage ? (
-                    <p className="font-semibold text-green-600">
+                    <p className="font-black text-emerald-700">
                       {formatPackage(college.avgPackage)}
                     </p>
                   ) : (
@@ -204,9 +250,9 @@ export default function ComparePage() {
             </CompareRow>
 
             {/* Actions */}
-            <div className="bg-slate-50 p-4 border-r font-semibold">Actions</div>
+            <div className="border-r border-slate-200 bg-slate-50 p-4 font-black">Actions</div>
             {compareList.map((college) => (
-              <div key={college.id} className="p-4 border-r border-b">
+              <div key={college.id} className="border-b border-r border-slate-200 p-4">
                 <Link href={`/colleges/${college.slug}`}>
                   <Button className="w-full gap-2" variant="outline">
                     View Details
@@ -245,11 +291,22 @@ function CompareRow({
 }) {
   return (
     <>
-      <div className="bg-slate-50 p-4 border-r border-b font-medium flex items-center gap-2">
+      <div className="flex items-center gap-2 border-b border-r border-slate-200 bg-slate-50 p-4 font-bold text-slate-700">
         {icon}
         {label}
       </div>
       {children}
     </>
+  );
+}
+
+function CompareMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/10">
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="safe-wrap mt-1 font-black text-slate-950 dark:text-white">{value}</p>
+    </div>
   );
 }

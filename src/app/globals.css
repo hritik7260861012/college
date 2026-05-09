@@ -1,28 +1,27 @@
-@import "tailwindcss/preflight";
-@tailwind utilities;
+@import "tailwindcss";
 
 /* CSS Variables for shadcn/ui theme */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --background: 230 80% 99%;
+  --foreground: 231 44% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 252 86% 58%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --secondary: 260 70% 95%;
+  --secondary-foreground: 260 50% 20%;
+  --muted: 228 38% 94%;
+  --muted-foreground: 215 16% 42%;
+  --accent: 190 90% 92%;
+  --accent-foreground: 226 72% 18%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
+  --border: 214 32% 88%;
+  --input: 214 32% 88%;
+  --ring: 252 86% 58%;
+  --radius: 1rem;
 }
 
 .dark {
@@ -50,11 +49,110 @@
 /* Base styles */
 * {
   border-color: hsl(var(--border));
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: hsl(var(--background));
+  background:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.16), transparent 30rem),
+    radial-gradient(circle at top right, rgba(236, 72, 153, 0.13), transparent 28rem),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 1) 420px),
+    hsl(var(--background));
   color: hsl(var(--foreground));
+  min-width: 320px;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.22), transparent 32rem),
+    radial-gradient(circle at top right, rgba(6, 182, 212, 0.16), transparent 30rem),
+    linear-gradient(180deg, #09090f, #111827 420px);
+  color: #f8fafc;
+}
+
+a {
+  text-decoration: none;
+}
+
+.container {
+  width: min(100% - 2rem, 1180px);
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: min(100% - 1rem, 1180px);
+  }
+}
+
+.surface-card {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 24px 70px rgba(30, 41, 59, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+.dark .surface-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.76);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.premium-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 35%, #ec4899 70%, #06b6d4 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4f46e5, #9333ea 38%, #ec4899 70%, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section-shell {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 22px 70px rgba(30, 41, 59, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.dark .section-shell {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.safe-wrap {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.hero-text-shadow {
+  text-shadow: 0 2px 22px rgba(15, 23, 42, 0.42);
+}
+
+@keyframes floatSoft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float-soft {
+  animation: floatSoft 5s ease-in-out infinite;
+}
+
+.campus-hero-image {
+  background-image: url("https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=85");
+  background-position: center;
+  background-size: cover;
 }
 
 /* Custom scrollbar */
@@ -64,16 +162,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #e8f3f3;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #6aa6a8;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #256f76;
 }
 
 /* Animation classes */

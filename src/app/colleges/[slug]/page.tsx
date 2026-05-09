@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import {
   GitCompare,
   Heart,
   ArrowLeft,
-  Clock,
   GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +23,6 @@ import { useCompareStore } from "@/store/compareStore";
 import { formatFees, formatPackage, cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/useToast";
-import { useSearchParams, useRouter } from "next/navigation";
 
 interface Course {
   id: string;
@@ -62,7 +60,6 @@ interface College {
 
 export default function CollegeDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -78,18 +75,19 @@ export default function CollegeDetailPage() {
     },
   });
 
-  useEffect(() => {
-    if (college && session) {
-      checkIfSaved();
-    }
-  }, [college, session]);
-
-  const checkIfSaved = async () => {
+  const checkIfSaved = useCallback(async () => {
     if (!session || !college) return;
     const res = await fetch("/api/saved");
-    const data = await res.json();
-    setSaved(data.savedColleges?.some((c: any) => c.id === college.id) || false);
-  };
+    const data: { savedColleges?: { id: string }[] } = await res.json();
+    setSaved(data.savedColleges?.some((c) => c.id === college.id) || false);
+  }, [college, session]);
+
+  useEffect(() => {
+    if (college && session) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      checkIfSaved();
+    }
+  }, [college, session, checkIfSaved]);
 
   const handleSave = async () => {
     if (!session) {
@@ -100,8 +98,8 @@ export default function CollegeDetailPage() {
     if (saved) {
       // Find and delete
       const res = await fetch("/api/saved");
-      const data = await res.json();
-      const savedRecord = data.savedColleges?.find((c: any) => c.id === college?.id);
+      const data: { savedColleges?: { id: string }[] } = await res.json();
+      const savedRecord = data.savedColleges?.find((c) => c.id === college?.id);
       if (savedRecord?.id) {
         await fetch(`/api/saved/${savedRecord.id}`, { method: "DELETE" });
         setSaved(false);
@@ -156,8 +154,8 @@ export default function CollegeDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse">
-          <div className="h-64 bg-slate-200 rounded-lg mb-8" />
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="mb-8 h-80 rounded-lg bg-slate-200" />
+          <div className="grid gap-8 md:grid-cols-3">
             <div className="md:col-span-2 space-y-4">
               <div className="h-8 bg-slate-200 rounded w-3/4" />
               <div className="h-4 bg-slate-200 rounded w-1/2" />
@@ -184,39 +182,39 @@ export default function CollegeDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 sm:py-10">
       {/* Back Button */}
       <Link
         href="/colleges"
-        className="inline-flex items-center text-slate-600 hover:text-blue-600 mb-6"
+        className="mb-6 inline-flex items-center rounded-md px-2 py-1 font-semibold text-slate-600 hover:bg-teal-50 hover:text-teal-800"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Colleges
       </Link>
 
       {/* Hero Section */}
-      <div className="relative h-64 md:h-96 rounded-xl overflow-hidden mb-8">
+      <div className="relative mb-8 h-[28rem] overflow-hidden rounded-lg shadow-2xl shadow-slate-900/20">
         <Image
           src={college.image || "/placeholder.jpg"}
           alt={college.name}
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-8">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
             {college.ranking && (
-              <span className="bg-blue-600 text-xs font-semibold px-2 py-1 rounded">
+              <span className="rounded-md bg-teal-700 px-2.5 py-1 text-xs font-black">
                 Rank #{college.ranking}
               </span>
             )}
-            <span className="flex items-center text-yellow-400">
-              <Star className="h-4 w-4 fill-yellow-400 mr-1" />
+            <span className="flex items-center rounded-md bg-amber-400 px-2.5 py-1 text-xs font-black text-slate-950">
+              <Star className="mr-1 h-4 w-4 fill-slate-950" />
               {college.rating}
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{college.name}</h1>
-          <div className="flex items-center gap-4 text-sm">
+          <h1 className="max-w-4xl text-3xl font-black tracking-normal sm:text-5xl">{college.name}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-100">
             <span className="flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
               {college.location}, {college.state}
@@ -232,7 +230,7 @@ export default function CollegeDetailPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4 mb-8">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row">
         <Button
           variant={compareStore.isInCompare(college.id) ? "default" : "outline"}
           onClick={handleCompare}
@@ -251,13 +249,13 @@ export default function CollegeDetailPage() {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid gap-8 md:grid-cols-3">
         {/* Main Content */}
         <div className="md:col-span-2 space-y-8">
           {/* Overview */}
-          <Card>
+          <Card className="surface-card">
             <CardHeader>
-              <CardTitle>About</CardTitle>
+              <CardTitle className="text-2xl font-black">About</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 leading-relaxed">
@@ -267,47 +265,91 @@ export default function CollegeDetailPage() {
           </Card>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <Card className="transition hover:-translate-y-1 hover:shadow-lg">
               <CardContent className="p-4 text-center">
-                <IndianRupee className="h-5 w-5 mx-auto mb-2 text-blue-600" />
+                <IndianRupee className="mx-auto mb-2 h-5 w-5 text-teal-700" />
                 <p className="text-xs text-slate-500">Annual Fees</p>
-                <p className="font-semibold">{formatFees(college.fees)}</p>
+                <p className="font-black">{formatFees(college.fees)}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="transition hover:-translate-y-1 hover:shadow-lg">
               <CardContent className="p-4 text-center">
                 <Star className="h-5 w-5 mx-auto mb-2 text-yellow-500" />
                 <p className="text-xs text-slate-500">Rating</p>
-                <p className="font-semibold">{college.rating}/5</p>
+                <p className="font-black">{college.rating}/5</p>
               </CardContent>
             </Card>
             {college.placementPercentage && (
-              <Card>
+              <Card className="transition hover:-translate-y-1 hover:shadow-lg">
                 <CardContent className="p-4 text-center">
-                  <TrendingUp className="h-5 w-5 mx-auto mb-2 text-green-500" />
+                  <TrendingUp className="mx-auto mb-2 h-5 w-5 text-emerald-600" />
                   <p className="text-xs text-slate-500">Placed</p>
-                  <p className="font-semibold">{college.placementPercentage}%</p>
+                  <p className="font-black">{college.placementPercentage}%</p>
                 </CardContent>
               </Card>
             )}
             {college.avgPackage && (
-              <Card>
+              <Card className="transition hover:-translate-y-1 hover:shadow-lg">
                 <CardContent className="p-4 text-center">
-                  <Award className="h-5 w-5 mx-auto mb-2 text-purple-500" />
+                  <Award className="mx-auto mb-2 h-5 w-5 text-amber-600" />
                   <p className="text-xs text-slate-500">Avg Package</p>
-                  <p className="font-semibold text-sm">{formatPackage(college.avgPackage)}</p>
+                  <p className="text-sm font-black">{formatPackage(college.avgPackage)}</p>
                 </CardContent>
               </Card>
             )}
           </div>
 
+          <Card className="surface-card overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-2xl font-black">Campus Gallery</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[college.image || "/placeholder.jpg", college.image || "/placeholder.jpg", college.image || "/placeholder.jpg"].map((image, index) => (
+                  <div key={index} className="relative h-40 overflow-hidden rounded-2xl">
+                    <Image
+                      src={image}
+                      alt={`${college.name} campus ${index + 1}`}
+                      fill
+                      className="object-cover transition duration-500 hover:scale-105"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="surface-card">
+            <CardHeader>
+              <CardTitle className="text-2xl font-black">Admission Process</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                {[
+                  ["01", "Check eligibility", "Review course, fee, and ranking fit."],
+                  ["02", "Shortlist college", "Save and compare with other options."],
+                  ["03", "Prepare documents", "Keep scores, ID proofs, and certificates ready."],
+                  ["04", "Apply on time", "Track deadlines and admission updates."],
+                ].map(([step, title, text]) => (
+                  <div key={step} className="rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/10">
+                    <span className="mb-3 inline-grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 to-pink-500 text-sm font-black text-white">
+                      {step}
+                    </span>
+                    <h3 className="font-black text-slate-950 dark:text-white">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Courses */}
           {college.courses && college.courses.length > 0 && (
-            <Card>
+            <Card className="surface-card overflow-hidden">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-2xl font-black">
+                  <GraduationCap className="h-5 w-5 text-teal-700" />
                   Courses Offered
                 </CardTitle>
               </CardHeader>
@@ -316,23 +358,23 @@ export default function CollegeDetailPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b text-sm text-slate-500">
-                        <th className="text-left py-3 px-4">Course</th>
-                        <th className="text-left py-3 px-4">Degree</th>
-                        <th className="text-left py-3 px-4">Duration</th>
-                        <th className="text-right py-3 px-4">Fees</th>
+                        <th className="px-4 py-3 text-left">Course</th>
+                        <th className="px-4 py-3 text-left">Degree</th>
+                        <th className="px-4 py-3 text-left">Duration</th>
+                        <th className="px-4 py-3 text-right">Fees</th>
                       </tr>
                     </thead>
                     <tbody>
                       {college.courses.map((course) => (
-                        <tr key={course.id} className="border-b hover:bg-slate-50">
-                          <td className="py-3 px-4">{course.name}</td>
-                          <td className="py-3 px-4">
-                            <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded">
+                        <tr key={course.id} className="border-b hover:bg-teal-50/50">
+                          <td className="px-4 py-3 font-semibold">{course.name}</td>
+                          <td className="px-4 py-3">
+                            <span className="rounded-md bg-teal-50 px-2 py-1 text-xs font-bold text-teal-800">
                               {course.degree}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-slate-600">{course.duration}</td>
-                          <td className="py-3 px-4 text-right font-semibold">
+                          <td className="px-4 py-3 text-slate-600">{course.duration}</td>
+                          <td className="px-4 py-3 text-right font-black text-teal-800">
                             {formatFees(course.fees)}
                           </td>
                         </tr>
@@ -346,15 +388,15 @@ export default function CollegeDetailPage() {
 
           {/* Reviews */}
           {college.reviews && college.reviews.length > 0 && (
-            <Card>
+            <Card className="surface-card">
               <CardHeader>
-                <CardTitle>Student Reviews</CardTitle>
+                <CardTitle className="text-2xl font-black">Student Reviews</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {college.reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-4 last:border-0">
+                  <div key={review.id} className="rounded-lg border border-slate-100 bg-white p-4 shadow-sm last:border">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="font-semibold">{review.userName}</div>
+                      <div className="font-black">{review.userName}</div>
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <Star
@@ -362,7 +404,7 @@ export default function CollegeDetailPage() {
                             className={cn(
                               "h-4 w-4",
                               i < Math.floor(review.rating)
-                                ? "text-yellow-500 fill-yellow-500"
+                                ? "fill-amber-500 text-amber-500"
                                 : "text-slate-300"
                             )}
                           />
@@ -379,9 +421,9 @@ export default function CollegeDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="sticky top-24">
+          <Card className="surface-card sticky top-24">
             <CardHeader>
-              <CardTitle>College Info</CardTitle>
+              <CardTitle className="text-2xl font-black">College Info</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -392,12 +434,12 @@ export default function CollegeDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-slate-500">Annual Fees</p>
-                <p className="font-medium text-blue-600">{formatFees(college.fees)}</p>
+                <p className="font-black text-teal-800">{formatFees(college.fees)}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Rating</p>
                 <p className="font-medium flex items-center">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
+                  <Star className="mr-1 h-4 w-4 fill-amber-500 text-amber-500" />
                   {college.rating} / 5
                 </p>
               </div>
@@ -410,7 +452,7 @@ export default function CollegeDetailPage() {
               {college.placementPercentage && (
                 <div>
                   <p className="text-sm text-slate-500">Placement Rate</p>
-                  <p className="font-medium text-green-600">
+                  <p className="font-black text-emerald-700">
                     {college.placementPercentage}%
                   </p>
                 </div>
@@ -418,7 +460,7 @@ export default function CollegeDetailPage() {
               {college.avgPackage && (
                 <div>
                   <p className="text-sm text-slate-500">Average Package</p>
-                  <p className="font-medium text-green-600">
+                  <p className="font-black text-emerald-700">
                     {formatPackage(college.avgPackage)}
                   </p>
                 </div>

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Mail, Lock, User, Eye, EyeOff, Bookmark, GitCompare, Search } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
 export default function RegisterPage() {
@@ -28,7 +27,7 @@ export default function RegisterPage() {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Passwords don't match",
+        title: "Passwords do not match",
         description: "Please make sure your passwords match",
         variant: "destructive",
       });
@@ -75,7 +74,7 @@ export default function RegisterPage() {
       });
 
       router.push("/login");
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -87,137 +86,141 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+    <div className="container mx-auto grid min-h-[calc(100vh-4rem)] items-center gap-8 px-4 py-10 lg:grid-cols-[440px_1fr]">
+      <Card className="surface-card w-full">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-teal-700 text-white shadow-md shadow-teal-900/20">
+              <GraduationCap className="h-8 w-8" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>
-            Sign up to start exploring colleges
-          </CardDescription>
+          <CardTitle className="text-3xl font-black tracking-normal">Create Account</CardTitle>
+          <CardDescription>Save, compare, and shortlist colleges</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="name">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+            <FieldIcon icon={<User className="h-4 w-4" />}>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Full name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="h-12 pl-10"
+                required
+              />
+            </FieldIcon>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+            <FieldIcon icon={<Mail className="h-4 w-4" />}>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="h-12 pl-10"
+                required
+              />
+            </FieldIcon>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="password">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="pl-10 pr-10"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <PasswordField
+              placeholder="Create password"
+              show={showPassword}
+              setShow={setShowPassword}
+              value={formData.password}
+              onChange={(value) => setFormData({ ...formData, password: value })}
+            />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="confirmPassword">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({ ...formData, confirmPassword: e.target.value })
-                  }
-                  className="pl-10 pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <PasswordField
+              placeholder="Confirm password"
+              show={showConfirmPassword}
+              setShow={setShowConfirmPassword}
+              value={formData.confirmPassword}
+              onChange={(value) => setFormData({ ...formData, confirmPassword: value })}
+            />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="h-12 w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-600">
             Already have an account?{" "}
-            <Link href="/login" className="text-blue-600 font-medium hover:underline">
+            <Link href="/login" className="font-bold text-teal-700 hover:underline">
               Sign in
             </Link>
           </div>
         </CardContent>
       </Card>
+
+      <section className="hidden rounded-lg bg-white p-8 shadow-xl shadow-slate-900/10 lg:block">
+        <p className="mb-3 inline-flex rounded-md bg-amber-100 px-3 py-1 text-sm font-bold text-amber-950">
+          Built for 2026 admissions
+        </p>
+        <h1 className="max-w-xl text-5xl font-black leading-tight tracking-normal text-slate-950">
+          Your college plan starts with a better shortlist.
+        </h1>
+        <div className="mt-8 grid gap-4">
+          {[
+            [Search, "Explore colleges by location, fee, and rating."],
+            [Bookmark, "Save favorites to review later."],
+            [GitCompare, "Compare up to three colleges side by side."],
+          ].map(([Icon, text]) => (
+            <div key={text as string} className="flex items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-teal-700 text-white">
+                <Icon className="h-5 w-5" />
+              </span>
+              <p className="font-semibold text-slate-700">{text as string}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function FieldIcon({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-700">{icon}</span>
+      {children}
+    </div>
+  );
+}
+
+function PasswordField({
+  placeholder,
+  show,
+  setShow,
+  value,
+  onChange,
+}: {
+  placeholder: string;
+  show: boolean;
+  setShow: (show: boolean) => void;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="relative">
+      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-700" />
+      <Input
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-12 pl-10 pr-10"
+        required
+        minLength={6}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        aria-label="Toggle password visibility"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
     </div>
   );
 }
